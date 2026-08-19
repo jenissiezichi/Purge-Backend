@@ -7,7 +7,7 @@ from dependencies import get_current_user
 from fastapi.responses import RedirectResponse
 import os
 
-FRONTEND_URL = os.getenv("https://purge-it.vercel.app", "http://localhost:5174")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5174")
 
 router = APIRouter(prefix="/auth/google", tags=["auth"])
 
