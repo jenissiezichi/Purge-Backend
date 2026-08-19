@@ -2,10 +2,15 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 
+print("Secrets dir exists:", os.path.exists("/etc/secrets"))
+print("Secrets dir contents:", os.listdir("/etc/secrets") if os.path.exists("/etc/secrets") else "N/A")
+
 cred_path = "/etc/secrets/firebase_credentials.json" if os.path.exists("/etc/secrets/firebase_credentials.json") else "firebase_credentials.json"
+print("Using cred_path:", cred_path)
+
 cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred)
-print("Secrets dir contents:", os.listdir("/etc/secrets") if os.path.exists("/etc/secrets") else "no /etc/secrets dir")
+
 db = firestore.client()
 
 def save_user_token(email:str, token_data:dict):
