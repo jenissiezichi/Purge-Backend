@@ -15,7 +15,7 @@ def get_spam_messages(keyword:Optional[str] = None,
                       sender_contains:Optional[str] = None,
                          email:str=Depends(get_current_user),   ):
     messages = list_spam_messages(email, max_results=15)
-    if keyword:
+    if keyword or sender_contains:
         messages = filter_messages(messages, keyword=keyword, sender_contains=sender_contains)
     return {
         "count": len(messages),

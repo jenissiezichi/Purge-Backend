@@ -13,5 +13,5 @@ def read_current_user(email: str = Depends(get_current_user)):
     }
 
 @router.get("/activity")
-def read_recent_activity(email: str = Depends(get_current_user)):
-    return {"activity": get_recent_activity(email)}
+def read_recent_activity(limit: int = 10, email: str = Depends(get_current_user)):
+    return {"activity": get_recent_activity(email, limit=limit)}

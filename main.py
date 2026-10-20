@@ -7,7 +7,8 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import  RateLimitExceeded
 from rate_limiter import limiter
 from fastapi.middleware.cors import CORSMiddleware
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+if os.getenv("ENV") != "production":
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 load_dotenv()
 
@@ -15,8 +16,10 @@ load_dotenv()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174",
-                   "https://purge-it.vercel.app"],
+    allow_origins=[
+        "http://localhost:5173",
+                   "https://purge-it.vercel.app"
+                   ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

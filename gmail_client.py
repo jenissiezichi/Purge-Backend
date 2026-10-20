@@ -89,13 +89,13 @@ def filter_messages(messages: list[dict], keyword:str = None, sender_contains:st
             m for m in filtered
             if keyword_lower in( m.get("subject") or "").lower()
         ]
-        if sender_contains:
-            sender_lower = sender_contains.lower()
-            filtered = [
-                m for m in filtered
-                if sender_lower in( m.get("subject") or "").lower()
-            ]
-        return filtered
+    if sender_contains:
+        sender_lower = sender_contains.lower()
+        filtered = [
+            m for m in filtered
+             if sender_lower in( m.get("from") or "").lower()
+          ]
+    return filtered
 
 def run_scan_for_all_users():
     users = get_all_users()
