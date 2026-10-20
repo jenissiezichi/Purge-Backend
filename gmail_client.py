@@ -88,6 +88,7 @@ def filter_messages(messages: list[dict], keyword: str = None, sender_contains: 
         filtered = [
             m for m in filtered
             if keyword_lower in (m.get("subject") or "").lower()
+               or keyword_lower in (m.get("from") or "").lower()
         ]
     if sender_contains:
         sender_lower = sender_contains.lower()
