@@ -14,7 +14,12 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 def save_user_token(email:str, token_data:dict):
-    db_collection = db.collection("users").document(email).set(token_data)
+    db.collection("users").document(email).set(token_data, merge=True)
+
+def set_permanent_delete_enabled(email: str, enabled: bool):
+    db.collection("users").document(email).set(
+        {"permanent_delete_enabled": enabled}, merge=True
+    )
 
 def get_user_token(email:str):
     doc = db.collection("users").document(email).get()

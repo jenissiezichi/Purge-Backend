@@ -73,6 +73,8 @@ def delete_messages_permanently(email: str, message_ids: list[str]):
     token_data = get_user_token(email)
     if FULL_DELETE_SCOPE not in token_data.get("scopes", []):
         raise PermissionError("User has not granted permanent delete access yet.")
+    if token_data.get("permanent_delete_enabled") is False:
+        raise PermissionError("Permanent delete is turned off in Settings.")
 
     service = get_gmail_services(email)
     results = []
@@ -80,6 +82,8 @@ def delete_messages_permanently(email: str, message_ids: list[str]):
         service.users().messages().delete(userId="me", id=msg_id).execute()
         results.append(msg_id)
     return results
+
+
 
 def filter_messages(messages: list[dict], keyword: str = None, sender_contains: str = None):
     filtered = messages
@@ -109,7 +113,7 @@ def run_scan_for_all_users():
             if not rules:
                 continue
 
-            spam = list_spam_messages(email, max_results=50)
+            spam = list_spam_messages(email, max_results=100)
             matched_ids = set()
 
             for rule in rules:
