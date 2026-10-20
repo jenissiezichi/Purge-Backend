@@ -1,0 +1,16 @@
+name: Nightly Purge scan
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call run-scan
+        run: |
+          curl --fail-with-body --retry 3 --retry-delay 30 --retry-all-errors --max-time 120 \
+            -X POST "${{ secrets.BACKEND_URL }}/internal/run-scan" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}"
