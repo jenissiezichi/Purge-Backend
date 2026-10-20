@@ -81,20 +81,20 @@ def delete_messages_permanently(email: str, message_ids: list[str]):
         results.append(msg_id)
     return results
 
-def filter_messages(messages: list[dict], keyword:str = None, sender_contains:str = None):
+def filter_messages(messages: list[dict], keyword: str = None, sender_contains: str = None):
     filtered = messages
     if keyword:
         keyword_lower = keyword.lower()
         filtered = [
             m for m in filtered
-            if keyword_lower in( m.get("subject") or "").lower()
+            if keyword_lower in (m.get("subject") or "").lower()
         ]
     if sender_contains:
         sender_lower = sender_contains.lower()
         filtered = [
             m for m in filtered
-             if sender_lower in( m.get("from") or "").lower()
-          ]
+            if sender_lower in (m.get("from") or "").lower()
+        ]
     return filtered
 
 def run_scan_for_all_users():
