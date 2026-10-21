@@ -115,3 +115,8 @@ def get_stats(email: str):
         "total_auto_trashed": total,
         "last_scan_at": last_scan.isoformat() if last_scan else None,
     }
+
+def set_ai_cleanup_enabled(email: str, enabled: bool):
+    db.collection("users").document(email).set(
+        {"ai_cleanup_enabled": enabled}, merge=True
+    )

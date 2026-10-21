@@ -4,7 +4,7 @@ from auth import FULL_DELETE_SCOPE
 from firebase_client import get_user_token, get_rules, log_activity, get_all_users, set_last_scan
 from datetime import datetime
 import time
-
+from classifier import classify_message
 
 def get_gmail_services(email:str):
     token_data = get_user_token(email)
@@ -43,6 +43,7 @@ def list_spam_messages(email: str, max_results: int = 10):
                 "from": headers.get("From"),
                 "subject": headers.get("Subject"),
                 "date": headers.get("Date"),
+                "snippet": response.get("snippet", ""),
             })
 
     batch = service.new_batch_http_request(callback=callback)
@@ -102,18 +103,21 @@ def filter_messages(messages: list[dict], keyword: str = None, sender_contains: 
         ]
     return filtered
 
+AI_MAX_PER_RUN = 25  # per user
+
 def run_scan_for_all_users():
     users = get_all_users()
     summary = []
 
     for user in users:
         email = user["email"]
+        use_ai = user.get("ai_cleanup_enabled") is not False
         try:
             rules = get_rules(email)
-            if not rules:
+            if not rules and not use_ai:
                 continue
 
-            spam = list_spam_messages(email, max_results=100)
+            spam = list_spam_messages(email, max_results=50)
             matched_ids = set()
 
             for rule in rules:
@@ -124,10 +128,30 @@ def run_scan_for_all_users():
                 )
                 matched_ids.update(m["id"] for m in filtered)
 
+            ai_ids = set()
+            if use_ai:
+                checked = 0
+                for m in spam:
+                    if m["id"] in matched_ids:
+                        continue
+                    if checked >= AI_MAX_PER_RUN:
+                        break
+                    result = classify_message(m.get("from"), m.get("subject"), m.get("snippet", ""))
+                    checked += 1
+                    if result["trash"]:
+                        ai_ids.add(m["id"])
+                    time.sleep(1)
+
             if matched_ids:
                 trashed = trash_messages(email, list(matched_ids))
                 log_activity(email, "auto-trashed", len(trashed), trashed)
                 summary.append({"email": email, "trashed": len(trashed)})
+
+            if ai_ids:
+                trashed_ai = trash_messages(email, list(ai_ids))
+                log_activity(email, "ai-trashed", len(trashed_ai), trashed_ai)
+                summary.append({"email": email, "ai_trashed": len(trashed_ai)})
+
             set_last_scan(email)
         except Exception as e:
             summary.append({"email": email, "error": str(e)})
