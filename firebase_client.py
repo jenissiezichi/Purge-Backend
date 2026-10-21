@@ -88,3 +88,30 @@ def delete_rule(email: str, rule_id: str):
 def get_all_users():
     docs = db.collection("users").stream()
     return [{"email": doc.id, **doc.to_dict()} for doc in docs]
+
+def set_last_scan(email: str):
+    db.collection("users").document(email).set(
+        {"last_scan_at": firestore.SERVER_TIMESTAMP}, merge=True
+    )
+
+def get_stats(email: str):
+    active_rules = sum(1 for _ in db.collection("rules").where("email", "==", email).stream())
+
+    total = 0
+    logs = (
+        db.collection("activity_logs")
+        .where("email", "==", email)
+        .where("action", "==", "auto-trashed")
+        .stream()
+    )
+    for doc in logs:
+        total += doc.to_dict().get("count", 0)
+
+    user = db.collection("users").document(email).get()
+    last_scan = user.to_dict().get("last_scan_at") if user.exists else None
+
+    return {
+        "active_rules": active_rules,
+        "total_auto_trashed": total,
+        "last_scan_at": last_scan.isoformat() if last_scan else None,
+    }

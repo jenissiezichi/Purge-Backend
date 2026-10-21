@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from dependencies import get_current_user
 from auth import FULL_DELETE_SCOPE
-from firebase_client import get_recent_activity, get_user_token, set_permanent_delete_enabled
+from firebase_client import get_recent_activity, get_user_token, set_permanent_delete_enabled, get_stats
 router = APIRouter(prefix="/api", tags=["User"])
 
 @router.get("/me")
@@ -29,3 +29,7 @@ def turn_on_permanent_delete(email: str = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Permanent delete access not granted yet.")
     set_permanent_delete_enabled(email, True)
     return {"permanent_delete_enabled": True}
+
+@router.get("/stats")
+def read_stats(email: str = Depends(get_current_user)):
+    return get_stats(email)

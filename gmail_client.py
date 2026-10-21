@@ -1,7 +1,7 @@
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from auth import FULL_DELETE_SCOPE
-from firebase_client import get_user_token, get_rules, log_activity, get_all_users
+from firebase_client import get_user_token, get_rules, log_activity, get_all_users, set_last_scan
 from datetime import datetime
 import time
 
@@ -128,6 +128,7 @@ def run_scan_for_all_users():
                 trashed = trash_messages(email, list(matched_ids))
                 log_activity(email, "auto-trashed", len(trashed), trashed)
                 summary.append({"email": email, "trashed": len(trashed)})
+            set_last_scan(email)
         except Exception as e:
             summary.append({"email": email, "error": str(e)})
 
